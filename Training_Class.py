@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from Model_Class_From_the_Scratch import MODEL_From_Scratch
 from Model_Class_Transfer_Learning_MobileNet import MobileNet
 from Dataset_Class import PyTorch_Classification_Dataset_Class as Dataset
+from tqdm import tqdm
 
 class PyTorch_Classification_Training_Class():
     def __init__(self
@@ -19,7 +20,6 @@ class PyTorch_Classification_Training_Class():
         self.USE_CUDA = torch.cuda.is_available()
         self.DEVICE = torch.device("cuda" if self.USE_CUDA else "cpu")
         img_width, img_height = 224, 224
-        self.batch_size = batch_size
         self.transform = transforms.Compose([
                         transforms.Resize(size=(img_width, img_height))
                         , transforms.ToTensor()
@@ -35,12 +35,12 @@ class PyTorch_Classification_Training_Class():
         
         self.train_loader = torch.utils.data.DataLoader(
             train_dataset
-            , batch_size=BATCH_SIZE
+            , batch_size=batch_size
             , shuffle=True
         )
         self.test_loader = torch.utils.data.DataLoader(
             test_dataset
-            , batch_size=BATCH_SIZE
+            , batch_size=batch_size
             , shuffle=False
         )
         self.model = None
