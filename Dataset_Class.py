@@ -14,14 +14,21 @@ class PyTorch_Custom_Dataset_Class(Dataset):
         
 class PyTorch_Classification_Dataset_Class(Dataset):
     def __init__(self
-                 , dataset_dir = "/content/Recycle_Classification_Dataset"
-                 , transform = None):
+                , dataset_dir = "/content/Recycle_Classification_Dataset"
+                , transform = None):
         if not os.path.isdir(dataset_dir):
             os.system("git clone https://github.com/JinFree/Recycle_Classification_Dataset.git")
             os.system("rm -rf ./Recycle_Classification_Dataset/.git")
-        
         self.image_abs_path = dataset_dir
         self.transform = transform
+        if self.transform is None:
+            self.transform = transforms.Compose([
+                    transforms.Resize(256)
+                    , transforms.RandomCrop(224)
+                    , transforms.ToTensor()
+                    , transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                            std=[0.229, 0.224, 0.225]) 
+                    ])
         self.label_list = os.listdir(self.image_abs_path)
         self.label_list.sort()
         self.x_list = []
