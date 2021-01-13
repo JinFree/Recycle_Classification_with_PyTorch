@@ -2,6 +2,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+class PyTorch_Custom_Model_Class(nn.Module):
+    def __init__(self):
+        super().__init__()
+        pass
+    
+    def forward(self, x):
+        return x
+
 class MODEL_From_Scratch(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
