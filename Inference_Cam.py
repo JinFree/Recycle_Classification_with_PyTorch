@@ -3,13 +3,13 @@ import cv2
 from PIL import Image
 import torchvision.transforms as transforms
 import numpy as np
-from .Model_Class_From_the_Scratch import MODEL_From_Scratch
-from .Model_Class_Transfer_Learning_MobileNet import MobileNet
+from Model_Class_From_the_Scratch import MODEL_From_Scratch
+from Model_Class_Transfer_Learning_MobileNet import MobileNet
 
 #gstreamer_string = ("nvarguscamerasrc ! video/x-raw(memory:NVMM), width=(int)1280, height=(int)720, format=(string)NV12, framerate=(fraction)60/1 ! nvvidconv flip-method=0 ! video/x-raw, width=(int)1280, height=(int)720, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink")
 gstreamer_string = ("v4l2src device=/dev/video0! video/x-raw, width=640, height=480, format=(string)YUY2,framerate=30/1 ! videoconvert ! video/x-raw,width=640,height=480,format=BGR ! appsink")
 
-class Inference_Class(videoSource = 0):
+class Inference_Class():
     def __init__(self):
         USE_CUDA = torch.cuda.is_available()
         self.DEVICE = torch.device("cuda" if USE_CUDA else "cpu")
@@ -30,8 +30,8 @@ class Inference_Class(videoSource = 0):
         else:
             self.model = MobileNet(num_classes).to(self.DEVICE)
             model_str = "PyTorch_Transfer_Learning_MobileNet"
-        model_str += ".pt" 
-        self.model.load_state_dict(torch.load(model_str), map_location=self.DEVICE)
+        model_str += ".pt"
+        self.model.load_state_dict(torch.load(model_str, map_location=self.DEVICE))
         self.model.eval()
 
     def inference_video(self, video_source="test_video.mp4"):
@@ -59,9 +59,10 @@ class Inference_Class(videoSource = 0):
         return
 
     def inference_frame(self, opencv_frame):
-        image_tensor = self.proprocess_frame(opencv_frame)
+        image_tensor = self.preprocess_frame(opencv_frame)
         image_tensor = image_tensor.to(self.DEVICE)
         inference_result = self.model(image_tensor)
+        inference_result = inference_result.squeeze()
         result_frame = self.postprocess_frame(opencv_frame, inference_result)
         return result_frame
 
@@ -72,11 +73,13 @@ class Inference_Class(videoSource = 0):
         return image_tensor.unsqueeze(0)
 
     def postprocess_frame(self, opencv_frame, inference_result):
+        inference_result = inference_result.cpu().detach().numpy()
         result_frame = np.copy(opencv_frame)
-        label_text = self.label_map[np.argmax(inference_result.cpu().detach().numpy())]
-        return cv2.putText(result_frame, label_text, point=(10, 50), font=cv2.FONT_HERSHEY_PLAIN, fontScale=2.0, color=(0,0,255), thickness=3)
+        label_text = self.label_map[np.argmax(inference_result)]
+        label_text += " " + str(inference_result[np.argmax(inference_result)])
+        return cv2.putText(result_frame, label_text, (10, 50), cv2.FONT_HERSHEY_PLAIN, fontScale=2.0, color=(0,0,255), thickness=3)
 
 if __name__ == "__main__":
     inferenceClass = Inference_Class()
     inferenceClass.load_model(False)
-    inferenceClass.inference_video(gstreamer_string)
+    inferenceClass.inference_video()
