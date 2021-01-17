@@ -85,16 +85,12 @@ class PyTorch_Classification_Training_Class():
                 for data, target in tqdm(self.test_loader):
                     data, target = data.to(self.DEVICE), target.to(self.DEVICE)
                     output = self.model(data)
-                    # 배치 오차를 합산
-                    test_loss += F.cross_entropy(output, target,
-                                                reduction='sum').item()
-                    # 가장 높은 값을 가진 인덱스가 바로 예측값
+                    test_loss += F.cross_entropy(output, target, reduction='sum').item()
                     pred = output.max(1, keepdim=True)[1]
                     correct += pred.eq(target.view_as(pred)).sum().item()
             test_loss /= len(self.test_loader.dataset)
             test_accuracy = 100. * correct / len(self.test_loader.dataset)
-            print('[{}] Test Loss: {:.4f}, Accuracy: {:.2f}%'.format(
-                    epoch, test_loss, test_accuracy))
+            print('[{}] Test Loss: {:.4f}, Accuracy: {:.2f}%'.format(epoch, test_loss, test_accuracy))
             if acc < test_accuracy or epoch == epochs:
                 acc = test_accuracy
                 torch.save(self.model.state_dict(), self.model_str)
