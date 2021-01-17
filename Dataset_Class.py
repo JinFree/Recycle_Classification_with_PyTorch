@@ -39,7 +39,6 @@ class PyTorch_Classification_Dataset_Class(Dataset):
             for img in img_list:
                 self.x_list.append(os.path.join(img_path, img))
                 self.y_list.append(label_index)
-        pass
 
     def __len__(self):
         return len(self.x_list)
@@ -58,7 +57,6 @@ class PyTorch_Classification_Dataset_Class(Dataset):
         for i in range(len(label_list)):
             f.write(label_list[i]+'\n')
         f.close()
-        pass
 
     def __num_classes__(self):
         return len(self.label_list)
