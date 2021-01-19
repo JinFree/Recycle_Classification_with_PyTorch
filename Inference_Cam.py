@@ -43,18 +43,19 @@ class Inference_Class():
             exit()
         cv2.namedWindow("Input", cv2.WINDOW_GUI_EXPANDED)
         cv2.namedWindow("Output", cv2.WINDOW_GUI_EXPANDED)
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if ret:
-                output = self.inference_frame(frame)
-                cv2.imshow("Input", frame)
-                cv2.imshow("Output", output)
-            else:
-                break
-            if cv2.waitKey(33) & 0xFF == ord('q'):
-                break
-        cap.release()
-        cv2.destroyAllWindows()
+        with torch.no_grad():
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if ret:
+                    output = self.inference_frame(frame)
+                    cv2.imshow("Input", frame)
+                    cv2.imshow("Output", output)
+                else:
+                    break
+                if cv2.waitKey(33) & 0xFF == ord('q'):
+                    break
+            cap.release()
+            cv2.destroyAllWindows()
         return
 
     def inference_frame(self, opencv_frame):
