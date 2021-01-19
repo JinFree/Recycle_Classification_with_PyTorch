@@ -93,25 +93,28 @@ if __name__ == "__main__":
             required=False,
             action="store_true", 
             help="inference from csi camera input")
-    parser.add_argument("-usb", "--usb_cam_number",
-            required=False,
-            type=int,
-            default=9999,
-            help="inference from logitech usb camera input, input number of /dev/video")
 
     args = parser.parse_args()
     is_train_from_scratch = False
-    source = ""
+    source = args.source
+
     if args.is_scratch:
         is_train_from_scratch = True
-    if args.source is not None:
-        source = args.source
-        if source.isdigit():
-            source = int(source)
+    if source.isdigit():
+        source = "v4l2src device=/dev/video{}! \
+            video/x-raw, width=640, height=480, format=(string)YUY2,framerate=30/1 ! \
+            videoconvert ! \
+            video/x-raw,width=640,height=480,format=BGR ! \
+            appsink".format(source)
     if args.has_csi_cam:
-        source = "nvarguscamerasrc ! video/x-raw(memory:NVMM), width=(int)1280, height=(int)720, format=(string)NV12, framerate=(fraction)60/1 ! nvvidconv flip-method=0 ! video/x-raw, width=(int)1280, height=(int)720, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"
-    if args.usb_cam_number < 9999:
-        source = "v4l2src device=/dev/video{}! video/x-raw, width=640, height=480, format=(string)YUY2,framerate=30/1 ! videoconvert ! video/x-raw,width=640,height=480,format=BGR ! appsink".format(args.usb_cam_number)
+        source = "nvarguscamerasrc ! \
+            video/x-raw(memory:NVMM), width=(int)1280, height=(int)720, format=(string)NV12, framerate=(fraction)60/1 ! \
+            nvvidconv flip-method=0 ! \
+            video/x-raw, width=(int)1280, height=(int)720, format=(string)BGRx ! \
+            videoconvert ! \
+            video/x-raw, format=(string)BGR ! \
+            appsink"
+
     inferenceClass = Inference_Class()
     inferenceClass.load_model(is_train_from_scratch)
     inferenceClass.inference_video(source)
