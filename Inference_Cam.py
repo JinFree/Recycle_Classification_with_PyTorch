@@ -5,9 +5,7 @@ import torchvision.transforms as transforms
 import numpy as np
 from Model_Class_From_the_Scratch import MODEL_From_Scratch
 from Model_Class_Transfer_Learning_MobileNet import MobileNet
-
-#gstreamer_string = ("nvarguscamerasrc ! video/x-raw(memory:NVMM), width=(int)1280, height=(int)720, format=(string)NV12, framerate=(fraction)60/1 ! nvvidconv flip-method=0 ! video/x-raw, width=(int)1280, height=(int)720, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink")
-gstreamer_string = ("v4l2src device=/dev/video0! video/x-raw, width=640, height=480, format=(string)YUY2,framerate=30/1 ! videoconvert ! video/x-raw,width=640,height=480,format=BGR ! appsink")
+import argparse
 
 class Inference_Class():
     def __init__(self):
@@ -79,7 +77,41 @@ class Inference_Class():
         label_text += " " + str(inference_result[np.argmax(inference_result)])
         return cv2.putText(result_frame, label_text, (10, 50), cv2.FONT_HERSHEY_PLAIN, fontScale=2.0, color=(0,0,255), thickness=3)
 
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--is_scratch", 
+            required=False,
+            action="store_true", 
+            help="inference with model trained from the scratch")
+    parser.add_argument("-src", "--source", 
+            required=False,
+            type=str, 
+            default="./test_video.mp4", 
+            help="OpenCV Video source")
+    parser.add_argument("-csi", "--has_csi_cam",
+            required=False,
+            action="store_true", 
+            help="inference from csi camera input")
+    parser.add_argument("-usb", "--usb_cam_number",
+            required=False,
+            type=int,
+            default=9999,
+            help="inference from logitech usb camera input, input number of /dev/video")
+
+    args = parser.parse_args()
+    is_train_from_scratch = False
+    source = ""
+    if args.is_scratch:
+        is_train_from_scratch = True
+    if args.source is not None:
+        source = args.source
+        if  source.isdigit():
+            source = int(source)
+    if args.has_csi_cam:
+        source = "nvarguscamerasrc ! video/x-raw(memory:NVMM), width=(int)1280, height=(int)720, format=(string)NV12, framerate=(fraction)60/1 ! nvvidconv flip-method=0 ! video/x-raw, width=(int)1280, height=(int)720, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"
+    if args.usb_cam_number < 9999:
+        source = "v4l2src device=/dev/video{}! video/x-raw, width=640, height=480, format=(string)YUY2,framerate=30/1 ! videoconvert ! video/x-raw,width=640,height=480,format=BGR ! appsink".format(args.usb_cam_number)
     inferenceClass = Inference_Class()
-    inferenceClass.load_model(False)
-    inferenceClass.inference_video()
+    inferenceClass.load_model(is_train_from_scratch)
+    inferenceClass.inference_video(source)
