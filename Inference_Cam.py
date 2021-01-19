@@ -90,10 +90,6 @@ if __name__ == "__main__":
             type=str, 
             default="./test_video.mp4", 
             help="OpenCV Video source")
-    parser.add_argument("-csi", "--has_csi_cam",
-            required=False,
-            action="store_true", 
-            help="inference from csi camera input")
 
     args = parser.parse_args()
     is_train_from_scratch = False
@@ -102,19 +98,7 @@ if __name__ == "__main__":
     if args.is_scratch:
         is_train_from_scratch = True
     if source.isdigit():
-        source = "v4l2src device=/dev/video{}! \
-            video/x-raw, width=640, height=480, format=(string)YUY2,framerate=30/1 ! \
-            videoconvert ! \
-            video/x-raw,width=640,height=480,format=BGR ! \
-            appsink".format(source)
-    if args.has_csi_cam:
-        source = "nvarguscamerasrc ! \
-            video/x-raw(memory:NVMM), width=(int)1280, height=(int)720, format=(string)NV12, framerate=(fraction)60/1 ! \
-            nvvidconv flip-method=0 ! \
-            video/x-raw, width=(int)1280, height=(int)720, format=(string)BGRx ! \
-            videoconvert ! \
-            video/x-raw, format=(string)BGR ! \
-            appsink"
+        source = int(source)
 
     inferenceClass = Inference_Class()
     inferenceClass.load_model(is_train_from_scratch)
