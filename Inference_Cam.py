@@ -106,7 +106,7 @@ if __name__ == "__main__":
         is_train_from_scratch = True
     if args.source is not None:
         source = args.source
-        if  source.isdigit():
+        if source.isdigit():
             source = int(source)
     if args.has_csi_cam:
         source = "nvarguscamerasrc ! video/x-raw(memory:NVMM), width=(int)1280, height=(int)720, format=(string)NV12, framerate=(fraction)60/1 ! nvvidconv flip-method=0 ! video/x-raw, width=(int)1280, height=(int)720, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink"
