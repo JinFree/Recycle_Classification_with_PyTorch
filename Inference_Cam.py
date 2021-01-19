@@ -59,25 +59,21 @@ class Inference_Class():
         return
 
     def inference_frame(self, opencv_frame):
-        image_tensor = self.preprocess_frame(opencv_frame)
-        image_tensor = image_tensor.to(self.DEVICE)
-        inference_result = self.model(image_tensor)
-        inference_result = inference_result.squeeze()
-        result_frame = self.postprocess_frame(opencv_frame, inference_result)
-        return result_frame
-
-    def preprocess_frame(self, opencv_frame):
         opencv_rgb = cv2.cvtColor(opencv_frame, cv2.COLOR_BGR2RGB)
         image = Image.fromarray(opencv_rgb)
         image_tensor = self.transform_info(image)
-        return image_tensor.unsqueeze(0)
+        image_tensor.unsqueeze(0)
+        image_tensor = image_tensor.to(self.DEVICE)
 
-    def postprocess_frame(self, opencv_frame, inference_result):
-        inference_result = inference_result.cpu().detach().numpy()
+        inference_result = self.model(image_tensor)
+
+        inference_result = inference_result.squeeze()
+        inference_result = inference_result.cpu().numpy()
         result_frame = np.copy(opencv_frame)
         label_text = self.label_map[np.argmax(inference_result)]
         label_text += " " + str(inference_result[np.argmax(inference_result)])
-        return cv2.putText(result_frame, label_text, (10, 50), cv2.FONT_HERSHEY_PLAIN, fontScale=2.0, color=(0,0,255), thickness=3)
+        result_frame = cv2.putText(result_frame, label_text, (10, 50), cv2.FONT_HERSHEY_PLAIN, fontScale=2.0, color=(0,0,255), thickness=3)
+        return result_frame
 
 
 if __name__ == "__main__":
